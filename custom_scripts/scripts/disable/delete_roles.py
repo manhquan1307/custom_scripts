@@ -1,7 +1,7 @@
 import frappe
 
 def execute():
-    role = "System Manager"
+    role = "Custom System Manager"
 
     # 1. Disable Role
     frappe.db.set_value("Role", role, "disabled", 1)

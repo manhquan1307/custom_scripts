@@ -4,62 +4,82 @@ import pandas as pd
 
 def execute():
     script_dir = os.path.dirname(__file__)
-    xlsx_path = os.path.join(script_dir, 'permissions_metadata.xlsx')
+    roles_dir = os.path.join(script_dir, 'role')
 
-    if not os.path.exists(xlsx_path):
-        frappe.log_error(message=f"File not found: {xlsx_path}", title="Permissions Import")
+    if not os.path.isdir(roles_dir):
+        print(f"Folder 'role' not found at {roles_dir}")
         return
 
-    df = pd.read_excel(xlsx_path, sheet_name=0)
-    df.columns = [c.strip() for c in df.columns]
-
-    col_doctype = next((c for c in df.columns if c.lower() == 'name'), None)
-    col_disabled = next((c for c in df.columns if c.lower() == 'disabled'), None)
-
-    if not col_doctype or not col_disabled:
-        frappe.log_error(message="Missing 'name' or 'disabled' column in Excel", title="Permissions Import")
-        return
-
-    updated = 0
-    perm_fields = [
-        'read', 'write', 'create', 'delete', 'submit', 'cancel', 'amend',
-        'report', 'export', 'import', 'share', 'print', 'email',
-        'if_owner', 'select'
-    ]
-
-    for _, row in df.iterrows():
-        doctype_name = str(row[col_doctype]).strip()
-        if not doctype_name or pd.isna(row[col_disabled]):
+    # Duyệt qua từng file .xlsx trong thư mục role
+    for fname in os.listdir(roles_dir):
+        if not fname.lower().endswith('.xlsx'):
             continue
 
-        disabled_flag = int(row[col_disabled])
-        perms = frappe.get_all('DocPerm',
-            filters={'parent': doctype_name},
-            fields=['name']
-        )
+        role_name = os.path.splitext(fname)[0]
+        file_path = os.path.join(roles_dir, fname)
 
-        if not perms:
-            frappe.log_error(message=f"No DocPerm found for {doctype_name}", title="Permissions Import")
+        # Tạo Role nếu chưa tồn tại
+        if not frappe.db.exists('Role', role_name):
+            frappe.get_doc({
+                'doctype': 'Role',
+                'role_name': role_name
+            }).insert(ignore_permissions=True)
+            print(f"Role '{role_name}' created.")
+        else:
+            print(f"Role '{role_name}' already exists.")
+
+        # Đọc dữ liệu permissions từ file Excel
+        try:
+            df = pd.read_excel(file_path)
+        except Exception as e:
+            print(f"Failed to read {file_path}: {e}")
             continue
 
-        for p in perms:
-            try:
-                doc = frappe.get_doc('DocPerm', p.name)
-                if disabled_flag:
-                    for f in perm_fields:
-                        setattr(doc, f, 0)
-                else:
-                    pass
+        df.fillna(0, inplace=True)
 
-                doc.flags.ignore_mandatory = True
-                doc.flags.ignore_permissions = True
-                doc.save()
-                updated += 1
-            except Exception as e:
-                frappe.log_error(message=str(e), title=f"Error updating {p.name}")
+        # Chèn từng dòng thành DocPerm record
+        for _, row in df.iterrows():
+            doctype_name = row.get('parent')
+            if not doctype_name:
+                print(f"Skipping row with missing parent Doctype in file {fname}")
+                continue
 
-    if updated:
-        frappe.db.commit()
-        frappe.msgprint(f"Updated {updated} DocPerm records.")
-    else:
-        frappe.msgprint("No DocPerm updates were made.")
+            perm_defaults = {
+                'doctype': 'Custom DocPerm',
+                'parent': doctype_name,
+                'role': role_name,
+                'permlevel': int(row.get('permlevel', 0)),
+                'if_owner': int(row.get('if_owner', 0)),
+                'select': int(row.get('select', 0)),
+                'read': int(row.get('read', 0)),
+                'write': int(row.get('write', 0)),
+                'create': int(row.get('create', 0)),
+                'delete': int(row.get('delete', 0)),
+                'submit': int(row.get('submit', 0)),
+                'cancel': int(row.get('cancel', 0)),
+                'amend': int(row.get('amend', 0)),
+                'report': int(row.get('report', 0)),
+                'export': int(row.get('export', 0)),
+                'import': int(row.get('import', 0)),
+                'share': int(row.get('share', 0)),
+                'print': int(row.get('print', 0)),
+                'email': int(row.get('email', 0)),
+            }
+
+            print(f"Processing DocType '{doctype_name}' for Role '{role_name}' (permlevel={perm_defaults['permlevel']})")
+
+            # Kiểm tra nếu DocPerm đã tồn tại thì không insert
+            exists = frappe.db.get_value('DocPerm', {
+                'parent': doctype_name,
+                'role': role_name,
+                'permlevel': perm_defaults['permlevel']
+            })
+
+            if not exists:
+                try:
+                    frappe.get_doc(perm_defaults).insert(ignore_permissions=True)
+                    print(f"Inserted DocPerm for {doctype_name} - {role_name}")
+                except Exception as e:
+                    print(f"Failed to insert DocPerm for {doctype_name} - {role_name}: {e}")
+            else:
+                print(f"DocPerm already exists for {doctype_name} - {role_name} (permlevel={perm_defaults['permlevel']})")
