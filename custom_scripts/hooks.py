@@ -5,19 +5,9 @@ app_description = "ok"
 app_email = "vumanhquan1307@gmail.com"
 app_license = "mit"
 
-after_migrate = [
-    "custom_scripts.scripts.create_doctypes.create_doctypes.execute",
-
+after_install = [
 	"custom_scripts.scripts.import_permissions.import_permissions.execute",
-
-	"custom_scripts.scripts.disable.disable_administrator.execute",
-	"custom_scripts.scripts.disable.disable_doctypes.execute",
 	"custom_scripts.scripts.disable.disable_roles.execute",
-]
-
-hide_doctype_list = [
-    "Activity Log",
-    "Email Queue"
 ]
 
 # Apps

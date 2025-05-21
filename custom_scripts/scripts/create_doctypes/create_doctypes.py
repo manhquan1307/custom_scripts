@@ -109,4 +109,3 @@ def execute():
             dt.save(ignore_permissions=True)
         frappe.db.commit()
         print(f"SYNCED {sheet}")
-

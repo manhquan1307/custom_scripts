@@ -7,7 +7,7 @@ pip install pandas openpyxl
 ```
 Add code to the `hooks.py` in custom_scripts file:
 ```
-after_migrate = [
+after_install = [
     "custom_scripts.scripts.create_doctypes.create_doctypes.execute_doctypes"
     ...
 ]
