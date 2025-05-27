@@ -40,7 +40,7 @@ def execute():
             continue
 
         perm_defaults = {
-            'doctype': 'Custom DocPerm',
+            'doctype': 'DocPerm',
             'parent': doctype_name,
             'role': role_name,
             'permlevel': int(row.get('permlevel', 0)),

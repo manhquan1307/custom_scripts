@@ -5,8 +5,8 @@ app_description = "ok"
 app_email = "vumanhquan1307@gmail.com"
 app_license = "mit"
 
-after_migrate = [
-	"custom_scripts.scripts.disable.disable_roles.execute",
+after_install = [
+	"custom_scripts.scripts.disable.delete_roles.execute",
 	"custom_scripts.scripts.import_permissions.import_permissions.execute",
 ]
 
