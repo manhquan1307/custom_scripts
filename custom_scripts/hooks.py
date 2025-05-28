@@ -10,6 +10,14 @@ after_migrate = [
 	"custom_scripts.scripts.import_permissions.import_permissions.execute",
 ]
 
+override_doctype_class = {
+    "Role": "custom_scripts.overrides.role"
+}
+
+override_whitelisted_methods = {
+    "frappe.desk.reportview.get": "custom_scripts.overrides.role.custom_get"
+}
+
 # Apps
 # ------------------
 
