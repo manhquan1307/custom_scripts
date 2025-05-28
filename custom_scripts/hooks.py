@@ -14,7 +14,6 @@ doctype_js = {
     "Role": "public/js/role.js"
 }
 
-
 override_doctype_class = {
 	"Role": "custom_scripts.overrides.role.Role"
 }
