@@ -1,20 +1,9 @@
 import frappe
-from frappe.desk.reportview import get
+from frappe.model.document import Document
+from frappe import _
 
-@frappe.whitelist()
-def custom_get():
-    roles_to_hide = ["System Manager", "Administrator"]
-    user = frappe.session.user
-
-    if frappe.form_dict.get("doctype") == "Role" and user != "Administrator":
-        try:
-            filters = frappe.parse_json(frappe.form_dict.get("filters") or "{}")
-            if not isinstance(filters, dict):
-                filters = {}
-
-            filters["name"] = ["not in", roles_to_hide]
-            frappe.form_dict["filters"] = frappe.as_json(filters)
-        except Exception as e:
-            frappe.log_error(f"Failed to apply role filter: {e}", "Custom Role Filter")
-
-    return get()
+class Role(Document):
+	def validate(self):
+		reserved_roles = ["Administrator", "System Manager"]
+		if self.is_new() and self.name in reserved_roles:
+			frappe.throw(_("Tên Role không hợp lệ, vui lòng chọn tên khác"))
