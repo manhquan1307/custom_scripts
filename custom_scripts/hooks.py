@@ -6,7 +6,7 @@ app_email = "vumanhquan1307@gmail.com"
 app_license = "mit"
 
 after_migrate = [
-	"custom_scripts.scripts.disable.disable_roles.execute",
+	"custom_scripts.scripts.delete_and_disable.delete_and_disable.execute",
 	"custom_scripts.scripts.import_permissions.import_permissions.execute",
 ]
 
