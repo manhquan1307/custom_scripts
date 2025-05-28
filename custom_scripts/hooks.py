@@ -10,6 +10,11 @@ after_migrate = [
 	"custom_scripts.scripts.import_permissions.import_permissions.execute",
 ]
 
+doctype_js = {
+    "Role": "public/js/role.js"
+}
+
+
 override_doctype_class = {
 	"Role": "custom_scripts.overrides.role.Role"
 }
