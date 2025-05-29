@@ -140,9 +140,3 @@ def custom_init_has_permission(
 		raise frappe.PermissionError
 
 	return out
-
-def override_permissions(bootinfo=None):
-	import frappe.permissions
-
-	frappe.permissions.has_permission = custom_has_permission
-	frappe.has_permission = custom_init_has_permission
